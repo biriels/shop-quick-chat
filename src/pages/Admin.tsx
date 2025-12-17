@@ -15,7 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { categories } from "@/data/mockData";
-import { Pencil, Trash2, Plus, Store, Package } from "lucide-react";
+import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -24,99 +24,118 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
 
 const Admin = () => {
-  const {
-    businesses,
-    posts,
-    addBusiness,
-    updateBusiness,
-    deleteBusiness,
-    addPost,
-    updatePost,
-    deletePost,
-    getBusinessById,
-  } = useMarketplace();
+  const { businesses, posts, loading, refreshData, getBusinessById } = useMarketplace();
 
   const [businessDialogOpen, setBusinessDialogOpen] = useState(false);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [editingBusiness, setEditingBusiness] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // Business form state
   const [businessForm, setBusinessForm] = useState({
     name: "",
     description: "",
-    whatsappNumber: "",
-    logo: "",
+    whatsapp_number: "",
     category: "",
+    verified: false,
+    active: true,
   });
 
   // Post form state
   const [postForm, setPostForm] = useState({
-    businessId: "",
-    title: "",
-    description: "",
+    business_id: "",
+    product_name: "",
+    caption: "",
     price: "",
-    currency: "USD",
-    image: "",
-    category: "",
-    featured: false,
+    media_url: "",
+    active: true,
   });
 
   const resetBusinessForm = () => {
     setBusinessForm({
       name: "",
       description: "",
-      whatsappNumber: "",
-      logo: "",
+      whatsapp_number: "",
       category: "",
+      verified: false,
+      active: true,
     });
     setEditingBusiness(null);
   };
 
   const resetPostForm = () => {
     setPostForm({
-      businessId: "",
-      title: "",
-      description: "",
+      business_id: "",
+      product_name: "",
+      caption: "",
       price: "",
-      currency: "USD",
-      image: "",
-      category: "",
-      featured: false,
+      media_url: "",
+      active: true,
     });
     setEditingPost(null);
   };
 
-  const handleBusinessSubmit = (e: React.FormEvent) => {
+  const handleBusinessSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingBusiness) {
-      updateBusiness(editingBusiness, businessForm);
-      toast.success("Business updated successfully");
-    } else {
-      addBusiness(businessForm);
-      toast.success("Business added successfully");
+    setSubmitting(true);
+
+    try {
+      if (editingBusiness) {
+        const { error } = await supabase
+          .from("businesses")
+          .update(businessForm)
+          .eq("id", editingBusiness);
+        if (error) throw error;
+        toast.success("Business updated successfully");
+      } else {
+        const { error } = await supabase.from("businesses").insert(businessForm);
+        if (error) throw error;
+        toast.success("Business added successfully");
+      }
+      setBusinessDialogOpen(false);
+      resetBusinessForm();
+      await refreshData();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save business");
+    } finally {
+      setSubmitting(false);
     }
-    setBusinessDialogOpen(false);
-    resetBusinessForm();
   };
 
-  const handlePostSubmit = (e: React.FormEvent) => {
+  const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const postData = {
-      ...postForm,
-      price: parseFloat(postForm.price),
-    };
-    if (editingPost) {
-      updatePost(editingPost, postData);
-      toast.success("Post updated successfully");
-    } else {
-      addPost(postData);
-      toast.success("Post added successfully");
+    setSubmitting(true);
+
+    try {
+      const postData = {
+        ...postForm,
+        price: parseFloat(postForm.price),
+      };
+
+      if (editingPost) {
+        const { error } = await supabase
+          .from("posts")
+          .update(postData)
+          .eq("id", editingPost);
+        if (error) throw error;
+        toast.success("Post updated successfully");
+      } else {
+        const { error } = await supabase.from("posts").insert(postData);
+        if (error) throw error;
+        toast.success("Post added successfully");
+      }
+      setPostDialogOpen(false);
+      resetPostForm();
+      await refreshData();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save post");
+    } finally {
+      setSubmitting(false);
     }
-    setPostDialogOpen(false);
-    resetPostForm();
   };
 
   const openEditBusiness = (id: string) => {
@@ -124,10 +143,11 @@ const Admin = () => {
     if (business) {
       setBusinessForm({
         name: business.name,
-        description: business.description,
-        whatsappNumber: business.whatsappNumber,
-        logo: business.logo || "",
+        description: business.description || "",
+        whatsapp_number: business.whatsapp_number,
         category: business.category,
+        verified: business.verified,
+        active: business.active,
       });
       setEditingBusiness(id);
       setBusinessDialogOpen(true);
@@ -138,33 +158,53 @@ const Admin = () => {
     const post = posts.find((p) => p.id === id);
     if (post) {
       setPostForm({
-        businessId: post.businessId,
-        title: post.title,
-        description: post.description,
+        business_id: post.business_id,
+        product_name: post.product_name,
+        caption: post.caption || "",
         price: post.price.toString(),
-        currency: post.currency,
-        image: post.image,
-        category: post.category,
-        featured: post.featured,
+        media_url: post.media_url,
+        active: post.active,
       });
       setEditingPost(id);
       setPostDialogOpen(true);
     }
   };
 
-  const handleDeleteBusiness = (id: string) => {
+  const handleDeleteBusiness = async (id: string) => {
     if (confirm("Delete this business and all its posts?")) {
-      deleteBusiness(id);
-      toast.success("Business deleted");
+      try {
+        const { error } = await supabase.from("businesses").delete().eq("id", id);
+        if (error) throw error;
+        toast.success("Business deleted");
+        await refreshData();
+      } catch (error: any) {
+        toast.error(error.message || "Failed to delete business");
+      }
     }
   };
 
-  const handleDeletePost = (id: string) => {
+  const handleDeletePost = async (id: string) => {
     if (confirm("Delete this post?")) {
-      deletePost(id);
-      toast.success("Post deleted");
+      try {
+        const { error } = await supabase.from("posts").delete().eq("id", id);
+        if (error) throw error;
+        toast.success("Post deleted");
+        await refreshData();
+      } catch (error: any) {
+        toast.error(error.message || "Failed to delete post");
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container py-12 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -232,30 +272,18 @@ const Admin = () => {
                         onChange={(e) =>
                           setBusinessForm({ ...businessForm, description: e.target.value })
                         }
-                        required
                       />
                     </div>
                     <div>
                       <Label htmlFor="whatsapp">WhatsApp Number</Label>
                       <Input
                         id="whatsapp"
-                        value={businessForm.whatsappNumber}
+                        value={businessForm.whatsapp_number}
                         onChange={(e) =>
-                          setBusinessForm({ ...businessForm, whatsappNumber: e.target.value })
+                          setBusinessForm({ ...businessForm, whatsapp_number: e.target.value })
                         }
                         placeholder="1234567890"
                         required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="logo">Logo URL (optional)</Label>
-                      <Input
-                        id="logo"
-                        value={businessForm.logo}
-                        onChange={(e) =>
-                          setBusinessForm({ ...businessForm, logo: e.target.value })
-                        }
-                        placeholder="https://..."
                       />
                     </div>
                     <div>
@@ -278,7 +306,30 @@ const Admin = () => {
                         </SelectContent>
                       </Select>
                     </div>
-                    <Button type="submit" className="w-full">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id="verified"
+                          checked={businessForm.verified}
+                          onCheckedChange={(checked) =>
+                            setBusinessForm({ ...businessForm, verified: checked })
+                          }
+                        />
+                        <Label htmlFor="verified">Verified</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id="active"
+                          checked={businessForm.active}
+                          onCheckedChange={(checked) =>
+                            setBusinessForm({ ...businessForm, active: checked })
+                          }
+                        />
+                        <Label htmlFor="active">Active</Label>
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={submitting}>
+                      {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                       {editingBusiness ? "Update Business" : "Add Business"}
                     </Button>
                   </form>
@@ -287,48 +338,56 @@ const Admin = () => {
             </div>
 
             <div className="grid gap-4">
-              {businesses.map((business) => (
-                <div
-                  key={business.id}
-                  className="bg-card rounded-lg p-4 shadow-card flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-4">
-                    {business.logo ? (
-                      <img
-                        src={business.logo}
-                        alt={business.name}
-                        className="w-12 h-12 rounded-lg object-cover"
-                      />
-                    ) : (
+              {businesses.length === 0 ? (
+                <div className="text-center py-12 bg-secondary/50 rounded-xl">
+                  <p className="text-muted-foreground">No businesses yet. Add your first one!</p>
+                </div>
+              ) : (
+                businesses.map((business) => (
+                  <div
+                    key={business.id}
+                    className="bg-card rounded-lg p-4 shadow-card flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
                         <Store className="h-6 w-6 text-muted-foreground" />
                       </div>
-                    )}
-                    <div>
-                      <h3 className="font-semibold">{business.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {business.whatsappNumber}
-                      </p>
+                      <div>
+                        <h3 className="font-semibold flex items-center gap-2">
+                          {business.name}
+                          {business.verified && (
+                            <CheckCircle className="h-4 w-4 text-accent" />
+                          )}
+                          {!business.active && (
+                            <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded">
+                              Inactive
+                            </span>
+                          )}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {business.whatsapp_number}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEditBusiness(business.id)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteBusiness(business.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openEditBusiness(business.id)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteBusiness(business.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -343,7 +402,7 @@ const Admin = () => {
                 if (!open) resetPostForm();
               }}>
                 <DialogTrigger asChild>
-                  <Button>
+                  <Button disabled={businesses.length === 0}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Post
                   </Button>
@@ -358,9 +417,9 @@ const Admin = () => {
                     <div>
                       <Label htmlFor="business">Business</Label>
                       <Select
-                        value={postForm.businessId}
+                        value={postForm.business_id}
                         onValueChange={(value) =>
-                          setPostForm({ ...postForm, businessId: value })
+                          setPostForm({ ...postForm, business_id: value })
                         }
                       >
                         <SelectTrigger>
@@ -376,103 +435,63 @@ const Admin = () => {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="title">Title</Label>
+                      <Label htmlFor="product_name">Product Name</Label>
                       <Input
-                        id="title"
-                        value={postForm.title}
+                        id="product_name"
+                        value={postForm.product_name}
                         onChange={(e) =>
-                          setPostForm({ ...postForm, title: e.target.value })
+                          setPostForm({ ...postForm, product_name: e.target.value })
                         }
                         required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="postDescription">Description</Label>
+                      <Label htmlFor="caption">Caption</Label>
                       <Textarea
-                        id="postDescription"
-                        value={postForm.description}
+                        id="caption"
+                        value={postForm.caption}
                         onChange={(e) =>
-                          setPostForm({ ...postForm, description: e.target.value })
+                          setPostForm({ ...postForm, caption: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="price">Price (USD)</Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        step="0.01"
+                        value={postForm.price}
+                        onChange={(e) =>
+                          setPostForm({ ...postForm, price: e.target.value })
                         }
                         required
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="price">Price</Label>
-                        <Input
-                          id="price"
-                          type="number"
-                          step="0.01"
-                          value={postForm.price}
-                          onChange={(e) =>
-                            setPostForm({ ...postForm, price: e.target.value })
-                          }
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="currency">Currency</Label>
-                        <Select
-                          value={postForm.currency}
-                          onValueChange={(value) =>
-                            setPostForm({ ...postForm, currency: value })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="USD">USD</SelectItem>
-                            <SelectItem value="EUR">EUR</SelectItem>
-                            <SelectItem value="GBP">GBP</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
                     <div>
-                      <Label htmlFor="image">Image URL</Label>
+                      <Label htmlFor="media_url">Media URL (Image/Video)</Label>
                       <Input
-                        id="image"
-                        value={postForm.image}
+                        id="media_url"
+                        value={postForm.media_url}
                         onChange={(e) =>
-                          setPostForm({ ...postForm, image: e.target.value })
+                          setPostForm({ ...postForm, media_url: e.target.value })
                         }
                         placeholder="https://..."
                         required
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="postCategory">Category</Label>
-                      <Select
-                        value={postForm.category}
-                        onValueChange={(value) =>
-                          setPostForm({ ...postForm, category: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id}>
-                              {cat.icon} {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
                     <div className="flex items-center gap-2">
                       <Switch
-                        id="featured"
-                        checked={postForm.featured}
+                        id="post_active"
+                        checked={postForm.active}
                         onCheckedChange={(checked) =>
-                          setPostForm({ ...postForm, featured: checked })
+                          setPostForm({ ...postForm, active: checked })
                         }
                       />
-                      <Label htmlFor="featured">Featured Post</Label>
+                      <Label htmlFor="post_active">Active</Label>
                     </div>
-                    <Button type="submit" className="w-full">
+                    <Button type="submit" className="w-full" disabled={submitting}>
+                      {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                       {editingPost ? "Update Post" : "Add Post"}
                     </Button>
                   </form>
@@ -480,46 +499,65 @@ const Admin = () => {
               </Dialog>
             </div>
 
+            {businesses.length === 0 && (
+              <div className="bg-secondary/50 rounded-lg p-4 text-center text-muted-foreground">
+                Add a business first before creating posts.
+              </div>
+            )}
+
             <div className="grid gap-4">
-              {posts.map((post) => {
-                const business = getBusinessById(post.businessId);
-                return (
-                  <div
-                    key={post.id}
-                    className="bg-card rounded-lg p-4 shadow-card flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={post.image}
-                        alt={post.title}
-                        className="w-16 h-12 rounded-lg object-cover"
-                      />
-                      <div>
-                        <h3 className="font-semibold">{post.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {business?.name} • ${post.price}
-                        </p>
+              {posts.length === 0 ? (
+                <div className="text-center py-12 bg-secondary/50 rounded-xl">
+                  <p className="text-muted-foreground">No posts yet. Add your first one!</p>
+                </div>
+              ) : (
+                posts.map((post) => {
+                  const business = getBusinessById(post.business_id);
+                  return (
+                    <div
+                      key={post.id}
+                      className="bg-card rounded-lg p-4 shadow-card flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={post.media_url}
+                          alt={post.product_name}
+                          className="w-16 h-12 rounded-lg object-cover"
+                        />
+                        <div>
+                          <h3 className="font-semibold flex items-center gap-2">
+                            {post.product_name}
+                            {!post.active && (
+                              <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded">
+                                Inactive
+                              </span>
+                            )}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {business?.name} • ${post.price}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEditPost(post.id)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeletePost(post.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditPost(post.id)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeletePost(post.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </TabsContent>
         </Tabs>

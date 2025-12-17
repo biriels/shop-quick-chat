@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Post, Business } from "@/types/marketplace";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { Badge } from "@/components/ui/badge";
+import { CheckCircle } from "lucide-react";
 
 interface PostCardProps {
   post: Post;
@@ -9,10 +10,10 @@ interface PostCardProps {
 }
 
 export const PostCard = ({ post, business }: PostCardProps) => {
-  const formatPrice = (price: number, currency: string) => {
+  const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: currency,
+      currency: "USD",
     }).format(price);
   };
 
@@ -21,50 +22,43 @@ export const PostCard = ({ post, business }: PostCardProps) => {
       <Link to={`/post/${post.id}`}>
         <div className="aspect-[4/3] overflow-hidden relative">
           <img
-            src={post.image}
-            alt={post.title}
+            src={post.media_url}
+            alt={post.product_name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          {post.featured && (
-            <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">
-              Featured
-            </Badge>
-          )}
         </div>
       </Link>
       
       <div className="p-4 space-y-3">
         <Link to={`/post/${post.id}`}>
           <h3 className="font-display font-semibold text-lg line-clamp-1 group-hover:text-accent transition-colors">
-            {post.title}
+            {post.product_name}
           </h3>
         </Link>
         
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {post.description}
-        </p>
+        {post.caption && (
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {post.caption}
+          </p>
+        )}
         
         <div className="flex items-center justify-between pt-2">
           <span className="font-display text-xl font-bold text-foreground">
-            {formatPrice(post.price, post.currency)}
+            {formatPrice(post.price)}
           </span>
         </div>
         
         {business && (
           <div className="flex items-center justify-between pt-2 border-t border-border">
             <div className="flex items-center gap-2">
-              {business.logo && (
-                <img
-                  src={business.logo}
-                  alt={business.name}
-                  className="w-6 h-6 rounded-full object-cover"
-                />
-              )}
               <span className="text-xs text-muted-foreground">{business.name}</span>
+              {business.verified && (
+                <CheckCircle className="h-3 w-3 text-accent" />
+              )}
             </div>
             <WhatsAppButton
-              phoneNumber={business.whatsappNumber}
-              productTitle={post.title}
+              phoneNumber={business.whatsapp_number}
+              productTitle={post.product_name}
               size="sm"
             />
           </div>

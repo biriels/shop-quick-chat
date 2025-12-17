@@ -1,24 +1,25 @@
 export interface Business {
   id: string;
   name: string;
-  description: string;
-  whatsappNumber: string;
-  logo?: string;
+  whatsapp_number: string;
   category: string;
-  createdAt: Date;
+  description: string | null;
+  verified: boolean;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Post {
   id: string;
-  businessId: string;
-  title: string;
-  description: string;
+  business_id: string;
+  media_url: string;
+  product_name: string;
   price: number;
-  currency: string;
-  image: string;
-  category: string;
-  featured: boolean;
-  createdAt: Date;
+  caption: string | null;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export type Category = {

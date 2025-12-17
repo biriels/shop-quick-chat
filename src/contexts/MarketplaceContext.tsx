@@ -1,16 +1,13 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Business, Post } from "@/types/marketplace";
-import { businesses as initialBusinesses, posts as initialPosts } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface MarketplaceContextType {
   businesses: Business[];
   posts: Post[];
-  addBusiness: (business: Omit<Business, "id" | "createdAt">) => void;
-  updateBusiness: (id: string, business: Partial<Business>) => void;
-  deleteBusiness: (id: string) => void;
-  addPost: (post: Omit<Post, "id" | "createdAt">) => void;
-  updatePost: (id: string, post: Partial<Post>) => void;
-  deletePost: (id: string) => void;
+  loading: boolean;
+  refreshData: () => Promise<void>;
   getBusinessById: (id: string) => Business | undefined;
   getPostById: (id: string) => Post | undefined;
   getPostsByBusiness: (businessId: string) => Post[];
@@ -20,66 +17,57 @@ interface MarketplaceContextType {
 const MarketplaceContext = createContext<MarketplaceContextType | undefined>(undefined);
 
 export const MarketplaceProvider = ({ children }: { children: ReactNode }) => {
-  const [businesses, setBusinesses] = useState<Business[]>(initialBusinesses);
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addBusiness = (business: Omit<Business, "id" | "createdAt">) => {
-    const newBusiness: Business = {
-      ...business,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-    };
-    setBusinesses((prev) => [...prev, newBusiness]);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [businessesRes, postsRes] = await Promise.all([
+        supabase.from("businesses").select("*").order("created_at", { ascending: false }),
+        supabase.from("posts").select("*").order("created_at", { ascending: false }),
+      ]);
+
+      if (businessesRes.error) throw businessesRes.error;
+      if (postsRes.error) throw postsRes.error;
+
+      setBusinesses(businessesRes.data || []);
+      setPosts(postsRes.data || []);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load marketplace data");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateBusiness = (id: string, business: Partial<Business>) => {
-    setBusinesses((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, ...business } : b))
-    );
-  };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const deleteBusiness = (id: string) => {
-    setBusinesses((prev) => prev.filter((b) => b.id !== id));
-    setPosts((prev) => prev.filter((p) => p.businessId !== id));
-  };
-
-  const addPost = (post: Omit<Post, "id" | "createdAt">) => {
-    const newPost: Post = {
-      ...post,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-    };
-    setPosts((prev) => [...prev, newPost]);
-  };
-
-  const updatePost = (id: string, post: Partial<Post>) => {
-    setPosts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...post } : p))
-    );
-  };
-
-  const deletePost = (id: string) => {
-    setPosts((prev) => prev.filter((p) => p.id !== id));
+  const refreshData = async () => {
+    await fetchData();
   };
 
   const getBusinessById = (id: string) => businesses.find((b) => b.id === id);
   const getPostById = (id: string) => posts.find((p) => p.id === id);
   const getPostsByBusiness = (businessId: string) =>
-    posts.filter((p) => p.businessId === businessId);
-  const getPostsByCategory = (category: string) =>
-    posts.filter((p) => p.category === category);
+    posts.filter((p) => p.business_id === businessId);
+  const getPostsByCategory = (category: string) => {
+    const categoryBusinessIds = businesses
+      .filter((b) => b.category === category)
+      .map((b) => b.id);
+    return posts.filter((p) => categoryBusinessIds.includes(p.business_id));
+  };
 
   return (
     <MarketplaceContext.Provider
       value={{
         businesses,
         posts,
-        addBusiness,
-        updateBusiness,
-        deleteBusiness,
-        addPost,
-        updatePost,
-        deletePost,
+        loading,
+        refreshData,
         getBusinessById,
         getPostById,
         getPostsByBusiness,

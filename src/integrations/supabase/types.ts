@@ -14,7 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      businesses: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          verified: boolean
+          whatsapp_number: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          verified?: boolean
+          whatsapp_number: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          verified?: boolean
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
+      posts: {
+        Row: {
+          active: boolean
+          business_id: string
+          caption: string | null
+          created_at: string
+          id: string
+          media_url: string
+          price: number
+          product_name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          business_id: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          media_url: string
+          price: number
+          product_name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          business_id?: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          media_url?: string
+          price?: number
+          product_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

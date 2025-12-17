@@ -3,17 +3,19 @@ import { Layout } from "@/components/layout/Layout";
 import { PostCard } from "@/components/PostCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { useMarketplace } from "@/contexts/MarketplaceContext";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
-  const { posts, businesses, getBusinessById } = useMarketplace();
+  const { posts, businesses, getBusinessById, loading } = useMarketplace();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const featuredPosts = posts.filter((post) => post.featured);
   const filteredPosts = selectedCategory
-    ? posts.filter((post) => post.category === selectedCategory)
+    ? posts.filter((post) => {
+        const business = getBusinessById(post.business_id);
+        return business?.category === selectedCategory;
+      })
     : posts;
 
   return (
@@ -46,29 +48,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured Posts */}
-      {featuredPosts.length > 0 && (
-        <section className="container py-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display text-2xl md:text-3xl font-bold">Featured Deals</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {featuredPosts.slice(0, 4).map((post, index) => (
-              <div
-                key={post.id}
-                className="animate-slide-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <PostCard
-                  post={post}
-                  business={getBusinessById(post.businessId)}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* All Posts */}
       <section id="browse" className="container py-12">
         <div className="mb-8">
@@ -79,7 +58,11 @@ const Index = () => {
           />
         </div>
         
-        {filteredPosts.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : filteredPosts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredPosts.map((post, index) => (
               <div
@@ -89,14 +72,14 @@ const Index = () => {
               >
                 <PostCard
                   post={post}
-                  business={getBusinessById(post.businessId)}
+                  business={getBusinessById(post.business_id)}
                 />
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No products found in this category.</p>
+            <p className="text-muted-foreground">No products found. Check back soon!</p>
           </div>
         )}
       </section>

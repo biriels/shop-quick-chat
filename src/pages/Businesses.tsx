@@ -1,9 +1,10 @@
 import { Layout } from "@/components/layout/Layout";
 import { BusinessCard } from "@/components/BusinessCard";
 import { useMarketplace } from "@/contexts/MarketplaceContext";
+import { Loader2 } from "lucide-react";
 
 const Businesses = () => {
-  const { businesses } = useMarketplace();
+  const { businesses, loading } = useMarketplace();
 
   return (
     <Layout>
@@ -17,7 +18,11 @@ const Businesses = () => {
           </p>
         </div>
 
-        {businesses.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : businesses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {businesses.map((business, index) => (
               <div
