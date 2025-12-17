@@ -4,16 +4,26 @@ import { PostCard } from "@/components/PostCard";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { useMarketplace } from "@/contexts/MarketplaceContext";
 import { categories } from "@/data/mockData";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle, Store, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const BusinessDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { getBusinessById, getPostsByBusiness } = useMarketplace();
+  const { getBusinessById, getPostsByBusiness, loading } = useMarketplace();
 
   const business = getBusinessById(id || "");
   const posts = getPostsByBusiness(id || "");
   const category = business ? categories.find((c) => c.id === business.category) : null;
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container py-12 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </Layout>
+    );
+  }
 
   if (!business) {
     return (
@@ -44,23 +54,16 @@ const BusinessDetail = () => {
         {/* Business Header */}
         <div className="bg-card rounded-xl p-6 md:p-8 shadow-card mb-8">
           <div className="flex flex-col md:flex-row md:items-center gap-6">
-            {business.logo ? (
-              <img
-                src={business.logo}
-                alt={business.name}
-                className="w-24 h-24 rounded-xl object-cover"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-xl bg-secondary flex items-center justify-center">
-                <span className="text-4xl font-bold text-muted-foreground">
-                  {business.name.charAt(0)}
-                </span>
-              </div>
-            )}
+            <div className="w-24 h-24 rounded-xl bg-secondary flex items-center justify-center">
+              <Store className="h-12 w-12 text-muted-foreground" />
+            </div>
 
             <div className="flex-1">
-              <h1 className="font-display text-2xl md:text-3xl font-bold mb-2">
+              <h1 className="font-display text-2xl md:text-3xl font-bold mb-2 flex items-center gap-2">
                 {business.name}
+                {business.verified && (
+                  <CheckCircle className="h-6 w-6 text-accent" />
+                )}
               </h1>
               {category && (
                 <span className="text-muted-foreground flex items-center gap-2 mb-3">
@@ -68,12 +71,14 @@ const BusinessDetail = () => {
                   <span>{category.name}</span>
                 </span>
               )}
-              <p className="text-muted-foreground">{business.description}</p>
+              {business.description && (
+                <p className="text-muted-foreground">{business.description}</p>
+              )}
             </div>
 
             <div className="flex-shrink-0">
               <WhatsAppButton
-                phoneNumber={business.whatsappNumber}
+                phoneNumber={business.whatsapp_number}
                 size="lg"
               />
             </div>
