@@ -50,12 +50,15 @@ export const PostCard = ({ post, business }: PostCardProps) => {
         
         {business && (
           <div className="flex items-center justify-between pt-2 border-t border-border">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">{business.name}</span>
+            <Link 
+              to={`/business/${business.id}`}
+              className="flex items-center gap-2 hover:text-accent transition-colors"
+            >
+              <span className="text-xs text-muted-foreground hover:text-accent">{business.name}</span>
               {business.verified && (
                 <CheckCircle className="h-3 w-3 text-accent" />
               )}
-            </div>
+            </Link>
             <WhatsAppButton
               phoneNumber={business.whatsapp_number}
               productTitle={post.product_name}
