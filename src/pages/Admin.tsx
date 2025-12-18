@@ -15,7 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { categories } from "@/data/mockData";
-import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle } from "lucide-react";
+import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -25,9 +25,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 const Admin = () => {
   const { businesses, posts, loading, refreshData, getBusinessById } = useMarketplace();
+  const { user, isAdmin, checking, signOut } = useAdminAuth();
 
   const [businessDialogOpen, setBusinessDialogOpen] = useState(false);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
@@ -196,7 +198,8 @@ const Admin = () => {
     }
   };
 
-  if (loading) {
+  // Show loading while checking authentication
+  if (checking || loading) {
     return (
       <Layout>
         <div className="container py-12 flex items-center justify-center">
@@ -206,16 +209,35 @@ const Admin = () => {
     );
   }
 
+  // If not admin after checking, show access denied (redirect happens via hook)
+  if (!isAdmin) {
+    return (
+      <Layout>
+        <div className="container py-12 flex flex-col items-center justify-center gap-4">
+          <ShieldAlert className="h-16 w-16 text-destructive" />
+          <h1 className="text-2xl font-bold">Access Denied</h1>
+          <p className="text-muted-foreground">You need admin privileges to view this page.</p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="container py-8">
-        <div className="mb-8">
-          <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">
-            Admin Panel
-          </h1>
-          <p className="text-muted-foreground">
-            Manage businesses and product posts.
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">
+              Admin Panel
+            </h1>
+            <p className="text-muted-foreground">
+              Manage businesses and product posts.
+            </p>
+          </div>
+          <Button variant="outline" onClick={signOut} className="flex items-center gap-2">
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
         </div>
 
         <Tabs defaultValue="businesses" className="space-y-6">
