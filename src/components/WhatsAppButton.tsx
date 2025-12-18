@@ -17,8 +17,8 @@ export const WhatsAppButton = ({
   className = "",
 }: WhatsAppButtonProps) => {
   const defaultMessage = productTitle
-    ? `Hi! I'm interested in: ${productTitle}`
-    : "Hi! I'm interested in your products.";
+    ? `Hi, I saw your post on this platform and I want to buy ${productTitle}.`
+    : "Hi, I saw your products on this platform and I'm interested.";
   
   const encodedMessage = encodeURIComponent(message || defaultMessage);
   const cleanNumber = phoneNumber.replace(/\D/g, "");
