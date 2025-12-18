@@ -35,7 +35,10 @@ export const Header = () => {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/" className="text-sm font-medium hover:text-accent transition-colors">
-            Browse
+            Home
+          </Link>
+          <Link to="/feed" className="text-sm font-medium hover:text-accent transition-colors">
+            Feed
           </Link>
           <Link to="/businesses" className="text-sm font-medium hover:text-accent transition-colors">
             Businesses
@@ -78,7 +81,14 @@ export const Header = () => {
                 className="px-4 py-2 text-sm font-medium hover:bg-secondary rounded-lg transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Browse
+                Home
+              </Link>
+              <Link
+                to="/feed"
+                className="px-4 py-2 text-sm font-medium hover:bg-secondary rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Feed
               </Link>
               <Link
                 to="/businesses"
