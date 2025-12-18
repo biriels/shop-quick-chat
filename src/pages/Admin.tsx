@@ -15,7 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { categories } from "@/data/mockData";
-import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut, ShieldAlert } from "lucide-react";
+import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, Lock } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -25,11 +25,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+
+// Simple access code - change this to your preferred code
+const ADMIN_ACCESS_CODE = "admin123";
 
 const Admin = () => {
   const { businesses, posts, loading, refreshData, getBusinessById } = useMarketplace();
-  const { user, isAdmin, checking, signOut } = useAdminAuth();
+  
+  // Simple access control
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [accessCode, setAccessCode] = useState("");
 
   const [businessDialogOpen, setBusinessDialogOpen] = useState(false);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
@@ -198,8 +203,18 @@ const Admin = () => {
     }
   };
 
-  // Show loading while checking authentication
-  if (checking || loading) {
+  const handleAccessSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (accessCode === ADMIN_ACCESS_CODE) {
+      setIsUnlocked(true);
+      toast.success("Access granted");
+    } else {
+      toast.error("Invalid access code");
+    }
+  };
+
+  // Show loading
+  if (loading) {
     return (
       <Layout>
         <div className="container py-12 flex items-center justify-center">
@@ -209,14 +224,34 @@ const Admin = () => {
     );
   }
 
-  // If not admin after checking, show access denied (redirect happens via hook)
-  if (!isAdmin) {
+  // Show access code prompt if not unlocked
+  if (!isUnlocked) {
     return (
       <Layout>
-        <div className="container py-12 flex flex-col items-center justify-center gap-4">
-          <ShieldAlert className="h-16 w-16 text-destructive" />
-          <h1 className="text-2xl font-bold">Access Denied</h1>
-          <p className="text-muted-foreground">You need admin privileges to view this page.</p>
+        <div className="container py-12 max-w-md mx-auto">
+          <div className="text-center mb-8">
+            <Lock className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h1 className="font-display text-2xl font-bold mb-2">Admin Access</h1>
+            <p className="text-muted-foreground">
+              Enter the access code to manage businesses and posts.
+            </p>
+          </div>
+          <form onSubmit={handleAccessSubmit} className="bg-card rounded-xl p-6 shadow-card space-y-4">
+            <div>
+              <Label htmlFor="accessCode">Access Code</Label>
+              <Input
+                id="accessCode"
+                type="password"
+                value={accessCode}
+                onChange={(e) => setAccessCode(e.target.value)}
+                placeholder="Enter access code"
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full">
+              Unlock Admin Panel
+            </Button>
+          </form>
         </div>
       </Layout>
     );
@@ -234,9 +269,9 @@ const Admin = () => {
               Manage businesses and product posts.
             </p>
           </div>
-          <Button variant="outline" onClick={signOut} className="flex items-center gap-2">
-            <LogOut className="h-4 w-4" />
-            Sign Out
+          <Button variant="outline" onClick={() => setIsUnlocked(false)} className="flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            Lock
           </Button>
         </div>
 
