@@ -15,7 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { categories } from "@/data/mockData";
-import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, Lock } from "lucide-react";
+import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -25,16 +25,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-
-// Simple access code - change this to your preferred code
-const ADMIN_ACCESS_CODE = "admin123";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 const Admin = () => {
+  const { user, isAdmin, checking, signOut } = useAdminAuth();
   const { businesses, posts, loading, refreshData, getBusinessById } = useMarketplace();
-  
-  // Simple access control
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [accessCode, setAccessCode] = useState("");
 
   const [businessDialogOpen, setBusinessDialogOpen] = useState(false);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
@@ -203,18 +198,8 @@ const Admin = () => {
     }
   };
 
-  const handleAccessSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (accessCode === ADMIN_ACCESS_CODE) {
-      setIsUnlocked(true);
-      toast.success("Access granted");
-    } else {
-      toast.error("Invalid access code");
-    }
-  };
-
-  // Show loading
-  if (loading) {
+  // Show loading while checking auth or loading data
+  if (checking || loading) {
     return (
       <Layout>
         <div className="container py-12 flex items-center justify-center">
@@ -224,34 +209,13 @@ const Admin = () => {
     );
   }
 
-  // Show access code prompt if not unlocked
-  if (!isUnlocked) {
+  // useAdminAuth redirects non-authenticated and non-admin users automatically
+  // This is a fallback in case the redirect hasn't happened yet
+  if (!user || !isAdmin) {
     return (
       <Layout>
-        <div className="container py-12 max-w-md mx-auto">
-          <div className="text-center mb-8">
-            <Lock className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h1 className="font-display text-2xl font-bold mb-2">Admin Access</h1>
-            <p className="text-muted-foreground">
-              Enter the access code to manage businesses and posts.
-            </p>
-          </div>
-          <form onSubmit={handleAccessSubmit} className="bg-card rounded-xl p-6 shadow-card space-y-4">
-            <div>
-              <Label htmlFor="accessCode">Access Code</Label>
-              <Input
-                id="accessCode"
-                type="password"
-                value={accessCode}
-                onChange={(e) => setAccessCode(e.target.value)}
-                placeholder="Enter access code"
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full">
-              Unlock Admin Panel
-            </Button>
-          </form>
+        <div className="container py-12 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </Layout>
     );
@@ -269,9 +233,9 @@ const Admin = () => {
               Manage businesses and product posts.
             </p>
           </div>
-          <Button variant="outline" onClick={() => setIsUnlocked(false)} className="flex items-center gap-2">
-            <Lock className="h-4 w-4" />
-            Lock
+          <Button variant="outline" onClick={signOut} className="flex items-center gap-2">
+            <LogOut className="h-4 w-4" />
+            Sign Out
           </Button>
         </div>
 
@@ -513,7 +477,7 @@ const Admin = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="price">Price (USD)</Label>
+                      <Label htmlFor="price">Price</Label>
                       <Input
                         id="price"
                         type="number"
@@ -526,14 +490,15 @@ const Admin = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="media_url">Media URL (Image/Video)</Label>
+                      <Label htmlFor="media_url">Media URL</Label>
                       <Input
                         id="media_url"
+                        type="url"
                         value={postForm.media_url}
                         onChange={(e) =>
                           setPostForm({ ...postForm, media_url: e.target.value })
                         }
-                        placeholder="https://..."
+                        placeholder="https://example.com/image.jpg"
                         required
                       />
                     </div>
@@ -556,16 +521,14 @@ const Admin = () => {
               </Dialog>
             </div>
 
-            {businesses.length === 0 && (
-              <div className="bg-secondary/50 rounded-lg p-4 text-center text-muted-foreground">
-                Add a business first before creating posts.
-              </div>
-            )}
-
             <div className="grid gap-4">
               {posts.length === 0 ? (
                 <div className="text-center py-12 bg-secondary/50 rounded-xl">
-                  <p className="text-muted-foreground">No posts yet. Add your first one!</p>
+                  <p className="text-muted-foreground">
+                    {businesses.length === 0
+                      ? "Add a business first before creating posts."
+                      : "No posts yet. Add your first one!"}
+                  </p>
                 </div>
               ) : (
                 posts.map((post) => {
@@ -576,11 +539,13 @@ const Admin = () => {
                       className="bg-card rounded-lg p-4 shadow-card flex items-center justify-between"
                     >
                       <div className="flex items-center gap-4">
-                        <img
-                          src={post.media_url}
-                          alt={post.product_name}
-                          className="w-16 h-12 rounded-lg object-cover"
-                        />
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-secondary">
+                          <img
+                            src={post.media_url}
+                            alt={post.product_name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                         <div>
                           <h3 className="font-semibold flex items-center gap-2">
                             {post.product_name}
@@ -591,7 +556,10 @@ const Admin = () => {
                             )}
                           </h3>
                           <p className="text-sm text-muted-foreground">
-                            {business?.name} • ${post.price}
+                            {business?.name || "Unknown Business"}
+                          </p>
+                          <p className="text-sm font-medium text-primary">
+                            GH₵{post.price.toFixed(2)}
                           </p>
                         </div>
                       </div>
