@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { useMarketplace } from "@/contexts/MarketplaceContext";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { categories } from "@/data/mockData";
-import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut } from "lucide-react";
+import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut, ClipboardList, Check, X, Eye } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -27,9 +27,25 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
+interface BusinessSubmission {
+  id: string;
+  business_name: string;
+  whatsapp_number: string;
+  category: string;
+  description: string | null;
+  product_images: string[];
+  status: string;
+  submitted_at: string;
+}
+
 const Admin = () => {
   const { user, isAdmin, checking, signOut } = useAdminAuth();
   const { businesses, posts, loading, refreshData, getBusinessById } = useMarketplace();
+
+  const [submissions, setSubmissions] = useState<BusinessSubmission[]>([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(true);
+  const [selectedSubmission, setSelectedSubmission] = useState<BusinessSubmission | null>(null);
+  const [processingSubmission, setProcessingSubmission] = useState(false);
 
   const [businessDialogOpen, setBusinessDialogOpen] = useState(false);
   const [postDialogOpen, setPostDialogOpen] = useState(false);
@@ -56,6 +72,96 @@ const Admin = () => {
     media_url: "",
     active: true,
   });
+
+  // Fetch submissions
+  const fetchSubmissions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("business_submissions")
+        .select("*")
+        .order("submitted_at", { ascending: false });
+
+      if (error) throw error;
+      setSubmissions(data || []);
+    } catch (error) {
+      console.error("Failed to fetch submissions");
+    } finally {
+      setLoadingSubmissions(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchSubmissions();
+    }
+  }, [isAdmin]);
+
+  const handleApproveSubmission = async (submission: BusinessSubmission) => {
+    setProcessingSubmission(true);
+    try {
+      // Create the business
+      const { error: businessError } = await supabase.from("businesses").insert({
+        name: submission.business_name,
+        whatsapp_number: submission.whatsapp_number,
+        category: submission.category,
+        description: submission.description,
+        verified: true,
+        active: true,
+      });
+
+      if (businessError) throw businessError;
+
+      // Update submission status
+      const { error: updateError } = await supabase
+        .from("business_submissions")
+        .update({ status: "approved", reviewed_at: new Date().toISOString() })
+        .eq("id", submission.id);
+
+      if (updateError) throw updateError;
+
+      toast.success("Business approved and added!");
+      setSelectedSubmission(null);
+      await fetchSubmissions();
+      await refreshData();
+    } catch (error) {
+      toast.error("Failed to approve submission");
+    } finally {
+      setProcessingSubmission(false);
+    }
+  };
+
+  const handleRejectSubmission = async (submission: BusinessSubmission) => {
+    setProcessingSubmission(true);
+    try {
+      const { error } = await supabase
+        .from("business_submissions")
+        .update({ status: "rejected", reviewed_at: new Date().toISOString() })
+        .eq("id", submission.id);
+
+      if (error) throw error;
+
+      toast.success("Submission rejected");
+      setSelectedSubmission(null);
+      await fetchSubmissions();
+    } catch (error) {
+      toast.error("Failed to reject submission");
+    } finally {
+      setProcessingSubmission(false);
+    }
+  };
+
+  const handleDeleteSubmission = async (id: string) => {
+    if (confirm("Delete this submission?")) {
+      try {
+        const { error } = await supabase.from("business_submissions").delete().eq("id", id);
+        if (error) throw error;
+        toast.success("Submission deleted");
+        await fetchSubmissions();
+      } catch (error) {
+        toast.error("Failed to delete submission");
+      }
+    }
+  };
 
   const resetBusinessForm = () => {
     setBusinessForm({
@@ -101,8 +207,8 @@ const Admin = () => {
       setBusinessDialogOpen(false);
       resetBusinessForm();
       await refreshData();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to save business");
+    } catch (error) {
+      toast.error("Failed to save business");
     } finally {
       setSubmitting(false);
     }
@@ -133,8 +239,8 @@ const Admin = () => {
       setPostDialogOpen(false);
       resetPostForm();
       await refreshData();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to save post");
+    } catch (error) {
+      toast.error("Failed to save post");
     } finally {
       setSubmitting(false);
     }
@@ -179,8 +285,8 @@ const Admin = () => {
         if (error) throw error;
         toast.success("Business deleted");
         await refreshData();
-      } catch (error: any) {
-        toast.error(error.message || "Failed to delete business");
+      } catch (error) {
+        toast.error("Failed to delete business");
       }
     }
   };
@@ -192,11 +298,14 @@ const Admin = () => {
         if (error) throw error;
         toast.success("Post deleted");
         await refreshData();
-      } catch (error: any) {
-        toast.error(error.message || "Failed to delete post");
+      } catch (error) {
+        toast.error("Failed to delete post");
       }
     }
   };
+
+  const pendingSubmissions = submissions.filter((s) => s.status === "pending");
+  const getCategoryName = (catId: string) => categories.find((c) => c.id === catId)?.name || catId;
 
   // Show loading while checking auth or loading data
   if (checking || loading) {
@@ -210,7 +319,6 @@ const Admin = () => {
   }
 
   // useAdminAuth redirects non-authenticated and non-admin users automatically
-  // This is a fallback in case the redirect hasn't happened yet
   if (!user || !isAdmin) {
     return (
       <Layout>
@@ -230,7 +338,7 @@ const Admin = () => {
               Admin Panel
             </h1>
             <p className="text-muted-foreground">
-              Manage businesses and product posts.
+              Manage businesses, posts, and submissions.
             </p>
           </div>
           <Button variant="outline" onClick={signOut} className="flex items-center gap-2">
@@ -239,8 +347,17 @@ const Admin = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="businesses" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+        <Tabs defaultValue="submissions" className="space-y-6">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
+            <TabsTrigger value="submissions" className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" />
+              Submissions
+              {pendingSubmissions.length > 0 && (
+                <span className="ml-1 bg-accent text-accent-foreground text-xs px-1.5 py-0.5 rounded-full">
+                  {pendingSubmissions.length}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="businesses" className="flex items-center gap-2">
               <Store className="h-4 w-4" />
               Businesses
@@ -250,6 +367,142 @@ const Admin = () => {
               Posts
             </TabsTrigger>
           </TabsList>
+
+          {/* Submissions Tab */}
+          <TabsContent value="submissions" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="font-display text-xl font-semibold">
+                Pending Submissions ({pendingSubmissions.length})
+              </h2>
+            </div>
+
+            {loadingSubmissions ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : pendingSubmissions.length === 0 ? (
+              <div className="text-center py-12 bg-secondary/50 rounded-xl">
+                <p className="text-muted-foreground">No pending submissions.</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {pendingSubmissions.map((submission) => (
+                  <div
+                    key={submission.id}
+                    className="bg-card rounded-lg p-4 shadow-card"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-4">
+                        {submission.product_images.length > 0 ? (
+                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-secondary">
+                            <img
+                              src={submission.product_images[0]}
+                              alt={submission.business_name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center">
+                            <Store className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-semibold">{submission.business_name}</h3>
+                          <p className="text-sm text-muted-foreground">{submission.whatsapp_number}</p>
+                          <p className="text-sm text-muted-foreground">{getCategoryName(submission.category)}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Submitted {new Date(submission.submitted_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={() => setSelectedSubmission(submission)}>
+                              <Eye className="h-4 w-4 mr-1" />
+                              Review
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Review Submission</DialogTitle>
+                            </DialogHeader>
+                            {selectedSubmission && (
+                              <div className="space-y-4">
+                                <div>
+                                  <Label className="text-muted-foreground">Business Name</Label>
+                                  <p className="font-medium">{selectedSubmission.business_name}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-muted-foreground">WhatsApp Number</Label>
+                                  <p className="font-medium">{selectedSubmission.whatsapp_number}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-muted-foreground">Category</Label>
+                                  <p className="font-medium">{getCategoryName(selectedSubmission.category)}</p>
+                                </div>
+                                {selectedSubmission.description && (
+                                  <div>
+                                    <Label className="text-muted-foreground">Description</Label>
+                                    <p>{selectedSubmission.description}</p>
+                                  </div>
+                                )}
+                                {selectedSubmission.product_images.length > 0 && (
+                                  <div>
+                                    <Label className="text-muted-foreground">Product Images</Label>
+                                    <div className="grid grid-cols-3 gap-2 mt-2">
+                                      {selectedSubmission.product_images.map((url, i) => (
+                                        <img
+                                          key={i}
+                                          src={url}
+                                          alt={`Product ${i + 1}`}
+                                          className="w-full aspect-square object-cover rounded-lg"
+                                        />
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="flex gap-2 pt-4">
+                                  <Button
+                                    className="flex-1"
+                                    onClick={() => handleApproveSubmission(selectedSubmission)}
+                                    disabled={processingSubmission}
+                                  >
+                                    {processingSubmission ? (
+                                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                    ) : (
+                                      <Check className="h-4 w-4 mr-2" />
+                                    )}
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    className="flex-1"
+                                    onClick={() => handleRejectSubmission(selectedSubmission)}
+                                    disabled={processingSubmission}
+                                  >
+                                    <X className="h-4 w-4 mr-2" />
+                                    Reject
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </DialogContent>
+                        </Dialog>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteSubmission(submission.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
           {/* Businesses Tab */}
           <TabsContent value="businesses" className="space-y-6">

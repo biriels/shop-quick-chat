@@ -35,7 +35,7 @@ const Index = () => {
                 <a href="#browse">Find businesses near you</a>
               </Button>
               <Button variant="link" className="text-primary-foreground/80 hover:text-primary-foreground" asChild>
-                <Link to="/businesses">
+                <Link to="/list-business">
                   List your business
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
