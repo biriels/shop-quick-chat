@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout/Layout";
 import { PostCard } from "@/components/PostCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { useMarketplace } from "@/contexts/MarketplaceContext";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -43,6 +43,10 @@ const Index = () => {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
+            </div>
+            <div className="flex items-center gap-2 mt-6 text-primary-foreground/70 text-sm">
+              <ShieldCheck className="h-4 w-4" />
+              <span>All businesses are vetted and approved before listing.</span>
             </div>
           </div>
         </div>
