@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout/Layout";
 import { PostCard } from "@/components/PostCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { useMarketplace } from "@/contexts/MarketplaceContext";
-import { ArrowRight, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -21,32 +21,25 @@ const Index = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/90 text-primary-foreground">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50"></div>
-        <div className="container relative py-16 md:py-24">
+      <section className="bg-primary text-primary-foreground">
+        <div className="container py-16 md:py-24">
           <div className="max-w-2xl animate-fade-in">
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              Shop Local,
-              <br />
-              <span className="text-accent">Chat Direct</span>
+              Message the best restaurants and hotels near you on WhatsApp
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/80 mb-8">
-              Discover amazing products from local businesses and connect instantly via WhatsApp.
+              Order food, shop, book rooms, or make inquiries instantly — no apps, no signups.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <Button variant="whatsapp" size="lg" asChild>
-                <a href="#browse">Start Browsing</a>
+                <a href="#browse">Find businesses near you</a>
               </Button>
-              <Button variant="outline" size="lg" className="bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10" asChild>
+              <Button variant="link" className="text-primary-foreground/80 hover:text-primary-foreground" asChild>
                 <Link to="/businesses">
-                  View Businesses
+                  List your business
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-            </div>
-            <div className="flex items-center gap-2 mt-6 text-primary-foreground/70 text-sm">
-              <ShieldCheck className="h-4 w-4" />
-              <span>All businesses are vetted and approved before listing.</span>
             </div>
           </div>
         </div>
