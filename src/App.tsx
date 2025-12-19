@@ -11,6 +11,7 @@ import BusinessDetail from "./pages/BusinessDetail";
 import PostDetail from "./pages/PostDetail";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import ListBusiness from "./pages/ListBusiness";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/list-business" element={<ListBusiness />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

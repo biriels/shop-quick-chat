@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_submissions: {
+        Row: {
+          business_name: string
+          category: string
+          description: string | null
+          id: string
+          product_images: string[] | null
+          reviewed_at: string | null
+          reviewer_notes: string | null
+          status: string
+          submitted_at: string
+          whatsapp_number: string
+        }
+        Insert: {
+          business_name: string
+          category: string
+          description?: string | null
+          id?: string
+          product_images?: string[] | null
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submitted_at?: string
+          whatsapp_number: string
+        }
+        Update: {
+          business_name?: string
+          category?: string
+          description?: string | null
+          id?: string
+          product_images?: string[] | null
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submitted_at?: string
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
       businesses: {
         Row: {
           active: boolean
