@@ -12,14 +12,14 @@ const plans = [
   },
   {
     name: "Basic",
-    price: "29",
+    price: "10",
     description: "Great for growing businesses",
     features: ["3 Business listings", "Unlimited posts", "Advanced analytics", "Priority support", "Featured placement"],
     popular: true,
   },
   {
     name: "Premium",
-    price: "79",
+    price: "20",
     description: "For established enterprises",
     features: ["Unlimited listings", "Unlimited posts", "Premium analytics", "24/7 support", "Top placement", "Custom branding", "API access"],
     popular: false,
