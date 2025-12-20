@@ -1,6 +1,7 @@
 import { Layout } from "@/components/layout/Layout";
 import { BusinessCard } from "@/components/BusinessCard";
 import { useMarketplace } from "@/contexts/MarketplaceContext";
+import { PricingSection } from "@/components/PricingSection";
 import { Loader2 } from "lucide-react";
 
 const Businesses = () => {
@@ -39,6 +40,11 @@ const Businesses = () => {
             <p className="text-muted-foreground">No businesses yet.</p>
           </div>
         )}
+
+        {/* Pricing Section */}
+        <div className="mt-16 border-t border-border pt-8">
+          <PricingSection />
+        </div>
       </div>
     </Layout>
   );

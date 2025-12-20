@@ -1,15 +1,10 @@
 import { Link } from "react-router-dom";
-import { PricingSection } from "@/components/PricingSection";
 
 export const Footer = () => {
   return (
     <footer className="border-t border-border bg-secondary/50 mt-auto">
       <div className="container py-8">
-        {/* Pricing Section */}
-        <PricingSection />
-        
-        <div className="border-t border-border mt-8 pt-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <Link to="/" className="flex items-center gap-2 mb-4">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -44,9 +39,8 @@ export const Footer = () => {
             </div>
           </div>
           
-          <div className="border-t border-border mt-8 pt-6 text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Marketplace. All rights reserved.
-          </div>
+        <div className="border-t border-border mt-8 pt-6 text-center text-sm text-muted-foreground">
+          © {new Date().getFullYear()} Marketplace. All rights reserved.
         </div>
       </div>
     </footer>
