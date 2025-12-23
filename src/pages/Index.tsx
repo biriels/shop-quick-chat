@@ -32,6 +32,9 @@ const ACCRA_LOCATIONS = [
   "Circle",
   "Ridge",
   "Roman Ridge",
+  "Nungua",
+  "Sakumono",
+  "Lashibi",
 ];
 
 const Index = () => {
