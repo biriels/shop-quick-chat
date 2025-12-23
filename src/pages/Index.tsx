@@ -3,14 +3,42 @@ import { Layout } from "@/components/layout/Layout";
 import { PostCard } from "@/components/PostCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { useMarketplace } from "@/contexts/MarketplaceContext";
-import { Loader2, Search, MapPin } from "lucide-react";
+import { Loader2, Search, MapPin, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const ACCRA_LOCATIONS = [
+  "All Accra",
+  "Osu",
+  "Cantonments",
+  "Airport Residential",
+  "East Legon",
+  "Adabraka",
+  "Labone",
+  "Dzorwulu",
+  "Achimota",
+  "Tema",
+  "Madina",
+  "Spintex",
+  "Dansoman",
+  "Lapaz",
+  "Kasoa",
+  "Circle",
+  "Ridge",
+  "Roman Ridge",
+];
 
 const Index = () => {
   const { posts, businesses, getBusinessById, loading } = useMarketplace();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("All Accra");
 
   const filteredPosts = posts.filter((post) => {
     const business = getBusinessById(post.business_id);
@@ -62,13 +90,31 @@ const Index = () => {
                   </div>
                 </div>
                 
-                <div className="hidden md:flex items-center gap-3 px-4 py-2 border-l border-border rounded-full hover:bg-secondary/50 transition-colors cursor-pointer">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <div className="text-left">
-                    <div className="text-xs font-medium text-muted-foreground">Where</div>
-                    <div className="text-sm text-foreground">Anywhere</div>
-                  </div>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="hidden md:flex items-center gap-3 px-4 py-2 border-l border-border rounded-full hover:bg-secondary/50 transition-colors cursor-pointer">
+                      <MapPin className="h-5 w-5 text-primary" />
+                      <div className="text-left flex-1">
+                        <div className="text-xs font-medium text-muted-foreground">Where</div>
+                        <div className="text-sm text-foreground flex items-center gap-1">
+                          {selectedLocation}
+                          <ChevronDown className="h-3 w-3" />
+                        </div>
+                      </div>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48 max-h-64 overflow-y-auto">
+                    {ACCRA_LOCATIONS.map((location) => (
+                      <DropdownMenuItem
+                        key={location}
+                        onClick={() => setSelectedLocation(location)}
+                        className={selectedLocation === location ? "bg-secondary" : ""}
+                      >
+                        {location}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 
                 <Button className="rounded-full h-12 w-12 md:h-12 md:w-auto md:px-6" size="icon">
                   <Search className="h-4 w-4 md:mr-2" />
