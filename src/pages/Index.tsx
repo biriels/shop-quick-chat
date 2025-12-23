@@ -12,12 +12,25 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredPosts = selectedCategory
-    ? posts.filter((post) => {
-        const business = getBusinessById(post.business_id);
-        return business?.category === selectedCategory;
-      })
-    : posts;
+  const filteredPosts = posts.filter((post) => {
+    const business = getBusinessById(post.business_id);
+    
+    // Filter by category
+    if (selectedCategory && business?.category !== selectedCategory) {
+      return false;
+    }
+    
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesProduct = post.product_name?.toLowerCase().includes(query);
+      const matchesCaption = post.caption?.toLowerCase().includes(query);
+      const matchesBusiness = business?.name?.toLowerCase().includes(query);
+      return matchesProduct || matchesCaption || matchesBusiness;
+    }
+    
+    return true;
+  });
 
   return (
     <Layout>
