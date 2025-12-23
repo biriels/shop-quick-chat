@@ -19,6 +19,7 @@ const Auth = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [activeTab, setActiveTab] = useState("login");
 
   useEffect(() => {
     // Set up auth state listener
@@ -108,7 +109,9 @@ const Auth = () => {
         return;
       }
 
-      toast.success("Account created! You can now log in.");
+      toast.success("Account created! Please log in with your credentials.");
+      setPassword("");
+      setActiveTab("login");
     } catch {
       toast.error("An unexpected error occurred");
     } finally {
@@ -137,7 +140,7 @@ const Auth = () => {
         </div>
 
         <div className="bg-card rounded-xl p-6 shadow-card">
-          <Tabs defaultValue="login" className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login" className="flex items-center gap-2">
                 <LogIn className="h-4 w-4" />
