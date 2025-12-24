@@ -37,6 +37,10 @@ const ListBusiness = () => {
     description: "",
   });
 
+  // Allowed image extensions (must match server-side storage policy)
+  const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -51,12 +55,26 @@ const ListBusiness = () => {
 
     try {
       for (const file of Array.from(files)) {
-        if (file.size > 5 * 1024 * 1024) {
+        // Validate file size
+        if (file.size > MAX_FILE_SIZE) {
           toast.error(`${file.name} is too large. Max size is 5MB`);
           continue;
         }
 
-        const fileExt = file.name.split('.').pop();
+        // Validate file extension
+        const fileExt = file.name.split('.').pop()?.toLowerCase();
+        if (!fileExt || !ALLOWED_EXTENSIONS.includes(fileExt)) {
+          toast.error(`${file.name} is not a valid image type. Allowed: jpg, jpeg, png, webp, gif`);
+          continue;
+        }
+
+        // Validate MIME type
+        const validMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!validMimeTypes.includes(file.type)) {
+          toast.error(`${file.name} has an invalid file type`);
+          continue;
+        }
+
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
@@ -64,7 +82,7 @@ const ListBusiness = () => {
           .upload(fileName, file);
 
         if (uploadError) {
-          toast.error(`Failed to upload ${file.name}`);
+          toast.error(`Failed to upload ${file.name}. Only image files are allowed.`);
           continue;
         }
 
@@ -79,7 +97,7 @@ const ListBusiness = () => {
       if (uploadedUrls.length > 0) {
         toast.success(`${uploadedUrls.length} image(s) uploaded`);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload images");
     } finally {
       setUploadingImages(false);
@@ -245,7 +263,7 @@ const ListBusiness = () => {
                   <input
                     type="file"
                     className="hidden"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp,.gif"
                     multiple
                     onChange={handleImageUpload}
                     disabled={uploadingImages}
