@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { PostCard } from "@/components/PostCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
@@ -42,6 +42,15 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("All Accra");
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const filteredPosts = posts.filter((post) => {
     const business = getBusinessById(post.business_id);
@@ -65,6 +74,62 @@ const Index = () => {
 
   return (
     <Layout>
+      {/* Sticky Glassmorphism Search Bar */}
+      <div
+        className={`fixed top-16 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 -translate-y-full pointer-events-none"
+        }`}
+      >
+        <div className="backdrop-blur-xl bg-background/70 border-b border-border/50 shadow-lg">
+          <div className="container py-3">
+            <div className="bg-card/80 backdrop-blur-md rounded-full shadow-md border border-border/50 p-1.5 max-w-2xl mx-auto">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-secondary/50 transition-colors cursor-pointer">
+                  <Search className="h-4 w-4 text-primary" />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    className="text-sm bg-transparent border-0 outline-none w-full placeholder:text-muted-foreground/60"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 border-l border-border/50 rounded-full hover:bg-secondary/50 transition-colors cursor-pointer">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <span className="text-sm text-foreground flex items-center gap-1">
+                        {selectedLocation}
+                        <ChevronDown className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48 max-h-64 overflow-y-auto bg-card/95 backdrop-blur-md">
+                    {ACCRA_LOCATIONS.map((location) => (
+                      <DropdownMenuItem
+                        key={location}
+                        onClick={() => setSelectedLocation(location)}
+                        className={selectedLocation === location ? "bg-secondary" : ""}
+                      >
+                        {location}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
+                <Button className="rounded-full h-9 w-9 md:h-9 md:w-auto md:px-4" size="icon">
+                  <Search className="h-4 w-4 md:mr-1.5" />
+                  <span className="hidden md:inline text-sm">Search</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Airbnb-style Hero Section */}
       <section className="relative bg-gradient-to-b from-primary/5 to-background">
         <div className="container py-12 md:py-20">
@@ -77,7 +142,7 @@ const Index = () => {
             </p>
             
             {/* Airbnb-style Search Bar */}
-            <div className="bg-card rounded-full shadow-lg border border-border p-2 max-w-2xl mx-auto">
+            <div className="bg-card/90 backdrop-blur-md rounded-full shadow-lg border border-border/50 p-2 max-w-2xl mx-auto">
               <div className="flex items-center gap-2 md:gap-4">
                 <div className="flex-1 flex items-center gap-3 px-4 py-2 rounded-full hover:bg-secondary/50 transition-colors cursor-pointer">
                   <Search className="h-5 w-5 text-primary" />
@@ -95,7 +160,7 @@ const Index = () => {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div className="hidden md:flex items-center gap-3 px-4 py-2 border-l border-border rounded-full hover:bg-secondary/50 transition-colors cursor-pointer">
+                    <div className="hidden md:flex items-center gap-3 px-4 py-2 border-l border-border/50 rounded-full hover:bg-secondary/50 transition-colors cursor-pointer">
                       <MapPin className="h-5 w-5 text-primary" />
                       <div className="text-left flex-1">
                         <div className="text-xs font-medium text-muted-foreground">Where</div>
@@ -106,7 +171,7 @@ const Index = () => {
                       </div>
                     </div>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48 max-h-64 overflow-y-auto">
+                  <DropdownMenuContent align="start" className="w-48 max-h-64 overflow-y-auto bg-card/95 backdrop-blur-md">
                     {ACCRA_LOCATIONS.map((location) => (
                       <DropdownMenuItem
                         key={location}
