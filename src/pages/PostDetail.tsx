@@ -5,6 +5,8 @@ import { useMarketplace } from "@/contexts/MarketplaceContext";
 import { categories } from "@/data/mockData";
 import { ArrowLeft, Store, Tag, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ImageGallery } from "@/components/ImageGallery";
+import { formatPrice } from "@/lib/formatPrice";
 
 const PostDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,13 +15,9 @@ const PostDetail = () => {
   const post = getPostById(id || "");
   const business = post ? getBusinessById(post.business_id) : null;
   const category = business ? categories.find((c) => c.id === business.category) : null;
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
-  };
+  
+  // Support for multiple images (currently uses single media_url, ready for future expansion)
+  const productImages = post ? [post.media_url] : [];
 
   if (loading) {
     return (
@@ -58,15 +56,9 @@ const PostDetail = () => {
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Image */}
+          {/* Image Gallery */}
           <div className="relative">
-            <div className="aspect-square rounded-xl overflow-hidden bg-secondary">
-              <img
-                src={post.media_url}
-                alt={post.product_name}
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <ImageGallery images={productImages} alt={post.product_name} />
           </div>
 
           {/* Details */}

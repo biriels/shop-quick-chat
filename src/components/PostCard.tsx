@@ -4,6 +4,7 @@ import { WhatsAppButton } from "./WhatsAppButton";
 import { Heart, Star } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { formatPrice } from "@/lib/formatPrice";
 
 interface PostCardProps {
   post: Post;
@@ -12,13 +13,6 @@ interface PostCardProps {
 
 export const PostCard = ({ post, business }: PostCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
-  };
 
   return (
     <article className="group relative">
