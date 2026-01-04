@@ -32,8 +32,8 @@ export const Footer = () => {
             <div>
               <h4 className="font-display font-semibold mb-4">For Business</h4>
               <nav className="flex flex-col gap-2">
-                <Link to="/admin" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Admin Panel
+                <Link to="/auth" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Admin Login
                 </Link>
               </nav>
             </div>
