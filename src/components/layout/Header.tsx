@@ -54,17 +54,6 @@ export const Header = () => {
             <Globe className="h-4 w-4" />
           </Button>
           
-          <Link to="/admin">
-            <Button 
-              variant="outline" 
-              className="rounded-full flex items-center gap-2 pl-3 pr-2 h-10 border-border hover:shadow-md transition-shadow"
-            >
-              <Menu className="h-4 w-4" />
-              <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center">
-                <User className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </Button>
-          </Link>
 
           {/* Mobile Menu Button */}
           <Button
@@ -111,15 +100,6 @@ export const Header = () => {
               >
                 List your business
               </Link>
-              <div className="border-t border-border mt-2 pt-2">
-                <Link
-                  to="/admin"
-                  className="px-4 py-3 text-sm font-medium hover:bg-secondary rounded-lg transition-colors block"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Admin Panel
-                </Link>
-              </div>
             </nav>
           </div>
         </div>
