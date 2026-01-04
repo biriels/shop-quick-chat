@@ -162,14 +162,30 @@ const ListBusiness = () => {
 
   return (
     <Layout>
-      <div className="container py-12 max-w-lg mx-auto">
-        <div className="text-center mb-8">
+      <div className="container py-12 max-w-2xl mx-auto">
+        {/* Hero Stats Section */}
+        <div className="text-center mb-10">
           <h1 className="font-display text-3xl font-bold mb-2">
             List Your Business
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-8">
             Get more customers on WhatsApp. Submit your business for review.
           </p>
+          
+          <div className="grid grid-cols-3 gap-4 bg-card rounded-xl p-6 shadow-card mb-8">
+            <div className="text-center">
+              <p className="font-display text-2xl md:text-3xl font-bold text-primary">5K+</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Active Buyers</p>
+            </div>
+            <div className="text-center border-x border-border">
+              <p className="font-display text-2xl md:text-3xl font-bold text-primary">200+</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Businesses Listed</p>
+            </div>
+            <div className="text-center">
+              <p className="font-display text-2xl md:text-3xl font-bold text-primary">50K+</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Monthly Views</p>
+            </div>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-card rounded-xl p-6 shadow-card space-y-6">
