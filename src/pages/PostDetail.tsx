@@ -16,8 +16,12 @@ const PostDetail = () => {
   const business = post ? getBusinessById(post.business_id) : null;
   const category = business ? categories.find((c) => c.id === business.category) : null;
   
-  // Support for multiple images (currently uses single media_url, ready for future expansion)
-  const productImages = post ? [post.media_url] : [];
+  // Support for multiple images - uses product_images array with fallback to media_url
+  const productImages = post 
+    ? (post.product_images && post.product_images.length > 0 
+        ? post.product_images 
+        : [post.media_url])
+    : [];
 
   if (loading) {
     return (

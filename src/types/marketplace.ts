@@ -20,6 +20,7 @@ export interface Post {
   active: boolean;
   created_at: string;
   updated_at: string;
+  product_images: string[] | null;
 }
 
 export type Category = {
