@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { PostCard } from "@/components/PostCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { useMarketplace } from "@/contexts/MarketplaceContext";
-import { Loader2, Search, MapPin, ChevronDown } from "lucide-react";
+import { Loader2, Search, MapPin, ChevronDown, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const ACCRA_LOCATIONS = [
   "All Accra",
@@ -35,6 +36,12 @@ const ACCRA_LOCATIONS = [
   "Nungua",
   "Sakumono",
   "Lashibi",
+];
+
+const FEATURED_SECTIONS = [
+  { title: "Available in East Legon", location: "East Legon" },
+  { title: "Popular in Osu", location: "Osu" },
+  { title: "Trending in Spintex", location: "Spintex" },
 ];
 
 const Index = () => {
@@ -71,6 +78,20 @@ const Index = () => {
     
     return true;
   });
+
+  // Create location-based sections by distributing posts
+  const locationSections = useMemo(() => {
+    return FEATURED_SECTIONS.map((section, sectionIndex) => {
+      // Distribute posts across sections for demo
+      const sectionPosts = posts.filter((_, index) => index % 3 === sectionIndex).slice(0, 8);
+      return {
+        ...section,
+        posts: sectionPosts,
+      };
+    });
+  }, [posts]);
+
+  const showLocationSections = !selectedCategory && !searchQuery;
 
   return (
     <Layout>
@@ -204,37 +225,95 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Products Grid */}
-      <section className="container py-8">
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : filteredPosts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredPosts.map((post, index) => (
-              <div
-                key={post.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <PostCard
-                  post={post}
-                  business={getBusinessById(post.business_id)}
-                />
+      {/* Location-based Sections (Airbnb style) */}
+      {showLocationSections && !loading && (
+        <section className="py-8 space-y-10">
+          {locationSections.map((section, sectionIndex) => (
+            section.posts.length > 0 && (
+              <div key={section.location} className="container">
+                {/* Section Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2 group cursor-pointer">
+                    <h2 className="text-xl md:text-2xl font-semibold text-foreground">
+                      {section.title}
+                    </h2>
+                    <ArrowRight className="h-5 w-5 text-foreground group-hover:translate-x-1 transition-transform" />
+                  </div>
+                  <div className="hidden md:flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full h-8 w-8 border-border"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full h-8 w-8 border-border"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Horizontal Scroll Container */}
+                <ScrollArea className="w-full">
+                  <div className="flex gap-4 pb-4">
+                    {section.posts.map((post, index) => (
+                      <div
+                        key={post.id}
+                        className="w-[280px] md:w-[300px] flex-shrink-0 animate-fade-in"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <PostCard
+                          post={post}
+                          business={getBusinessById(post.business_id)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <ScrollBar orientation="horizontal" className="invisible" />
+                </ScrollArea>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
-              <Search className="h-8 w-8 text-muted-foreground" />
+            )
+          ))}
+        </section>
+      )}
+
+      {/* Products Grid - Shows when filtered or searching */}
+      {(!showLocationSections || loading) && (
+        <section className="container py-8">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-            <h3 className="font-display text-xl font-semibold mb-2">No products found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filters</p>
-          </div>
-        )}
-      </section>
+          ) : filteredPosts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredPosts.map((post, index) => (
+                <div
+                  key={post.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <PostCard
+                    post={post}
+                    business={getBusinessById(post.business_id)}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
+                <Search className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="font-display text-xl font-semibold mb-2">No products found</h3>
+              <p className="text-muted-foreground">Try adjusting your search or filters</p>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="bg-secondary/50 py-16">
