@@ -59,14 +59,14 @@ const PostDetail = () => {
           </Link>
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Image Gallery */}
-          <div className="relative">
-            <ImageGallery images={productImages} alt={post.product_name} />
-          </div>
+        {/* Image Gallery - Full width on top */}
+        <div className="relative mb-8">
+          <ImageGallery images={productImages} alt={post.product_name} />
+        </div>
 
-          {/* Details */}
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Product Details - Left side */}
+          <div className="lg:col-span-2 space-y-6">
             <div>
               {category && (
                 <span className="text-sm text-muted-foreground flex items-center gap-1 mb-2">
@@ -84,30 +84,33 @@ const PostDetail = () => {
             </div>
 
             {post.caption && (
-              <p className="text-muted-foreground leading-relaxed">
-                {post.caption}
-              </p>
+              <div className="border-t border-b py-6">
+                <h3 className="font-display font-semibold text-lg mb-3">Description</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {post.caption}
+                </p>
+              </div>
             )}
 
             {/* Business Info */}
             {business && (
-              <div className="bg-secondary/50 rounded-xl p-4">
+              <div className="border-b pb-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
-                    <Store className="h-6 w-6 text-muted-foreground" />
+                  <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center text-xl font-semibold">
+                    {business.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1">
                     <Link
                       to={`/business/${business.id}`}
-                      className="font-semibold hover:text-accent transition-colors flex items-center gap-2"
+                      className="font-semibold text-lg hover:underline flex items-center gap-2"
                     >
-                      {business.name}
+                      Sold by {business.name}
                       {business.verified && (
                         <CheckCircle className="h-4 w-4 text-accent" />
                       )}
                     </Link>
                     {business.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         {business.description}
                       </p>
                     )}
@@ -115,25 +118,35 @@ const PostDetail = () => {
                 </div>
               </div>
             )}
-
-            {/* WhatsApp CTA */}
-            {business && (
-              <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-                <h3 className="font-display font-semibold text-lg">
-                  Interested in this product?
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Contact the seller directly via WhatsApp for inquiries, pricing, or to make a purchase.
-                </p>
-                <WhatsAppButton
-                  phoneNumber={business.whatsapp_number}
-                  productTitle={post.product_name}
-                  size="xl"
-                  className="w-full"
-                />
-              </div>
-            )}
           </div>
+
+          {/* Contact Card - Right side (sticky) */}
+          {business && (
+            <div className="lg:col-span-1">
+              <div className="sticky top-24 bg-card border border-border rounded-xl p-6 space-y-4 shadow-lg">
+                <div className="text-center space-y-1">
+                  <div className="font-display text-2xl font-bold text-accent">
+                    {formatPrice(post.price)}
+                  </div>
+                </div>
+                
+                <div className="border-t pt-4 space-y-4">
+                  <h3 className="font-display font-semibold text-lg">
+                    Interested in this product?
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Contact the seller directly via WhatsApp for inquiries or to make a purchase.
+                  </p>
+                  <WhatsAppButton
+                    phoneNumber={business.whatsapp_number}
+                    productTitle={post.product_name}
+                    size="xl"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Layout>
