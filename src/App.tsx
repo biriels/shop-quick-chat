@@ -12,6 +12,7 @@ import PostDetail from "./pages/PostDetail";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import ListBusiness from "./pages/ListBusiness";
+import Deals from "./pages/Deals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/list-business" element={<ListBusiness />} />
+            <Route path="/deals" element={<Deals />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

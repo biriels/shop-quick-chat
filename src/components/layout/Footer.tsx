@@ -26,6 +26,9 @@ export const Footer = () => {
                 <Link to="/businesses" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   All Businesses
                 </Link>
+                <Link to="/deals" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Deals & Coupons
+                </Link>
               </nav>
             </div>
             
