@@ -33,6 +33,11 @@ SHOPPING DEALS:
 - "Extra 25% Off Sale Items" (EXTRA25) - 25% off reduced items, Melcom, expires in 4 days
 - "GH₵50 Off Electronics" (TECH50) - GH₵50 off min spend GH₵300, Jumia, expires in 8 days
 - "Flash Sale Access" (FLASH2024) - Up to 70% off early access, Tonaton, expires in 1 day
+
+EVENTS TICKETS:
+- "20% Off Concert Tickets" (CONCERT20) - 20% off all live music events, Ticketmaster Ghana, expires in 5 days
+- "Buy 2 Get 1 Free Movie" (MOVIE3FOR2) - BOGO on weekend movie screenings, Silverbird Cinemas, expires in 3 days
+- "VIP Festival Pass Discount" (FESTVIPH) - 30% off VIP access to Afrochella, Afrochella, expires in 10 days
 `;
 
 serve(async (req) => {

@@ -14,7 +14,8 @@ import {
   Copy,
   Check,
   Clock,
-  Percent
+  Percent,
+  CalendarDays
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ const categories: DealCategory[] = [
   { id: "restaurants", name: "Restaurant Coupons", icon: <UtensilsCrossed className="h-5 w-5" />, color: "bg-orange-500" },
   { id: "rideshare", name: "Uber & Bolt Promos", icon: <Car className="h-5 w-5" />, color: "bg-purple-500" },
   { id: "shopping", name: "Shopping Deals", icon: <ShoppingBag className="h-5 w-5" />, color: "bg-pink-500" },
+  { id: "events", name: "Events Tickets", icon: <CalendarDays className="h-5 w-5" />, color: "bg-amber-500" },
 ];
 
 const deals: Deal[] = [
@@ -72,6 +74,11 @@ const deals: Deal[] = [
   { id: "13", categoryId: "shopping", title: "Extra 25% Off Sale Items", code: "EXTRA25", discount: "25%", description: "On already reduced items", expiresIn: "4 days", brand: "Melcom" },
   { id: "14", categoryId: "shopping", title: "GH₵50 Off Electronics", code: "TECH50", discount: "GH₵50", description: "Min spend GH₵300", expiresIn: "8 days", brand: "Jumia" },
   { id: "15", categoryId: "shopping", title: "Flash Sale Access", code: "FLASH2024", discount: "Up to 70%", description: "Early access to flash sales", expiresIn: "1 day", brand: "Tonaton" },
+  
+  // Events Tickets
+  { id: "16", categoryId: "events", title: "20% Off Concert Tickets", code: "CONCERT20", discount: "20%", description: "All live music events", expiresIn: "5 days", brand: "Ticketmaster Ghana" },
+  { id: "17", categoryId: "events", title: "Buy 2 Get 1 Free Movie", code: "MOVIE3FOR2", discount: "BOGO", description: "Weekend movie screenings", expiresIn: "3 days", brand: "Silverbird Cinemas" },
+  { id: "18", categoryId: "events", title: "VIP Festival Pass Discount", code: "FESTVIPH", discount: "30%", description: "VIP access to Afrochella", expiresIn: "10 days", brand: "Afrochella" },
 ];
 
 const DealCard = ({ deal }: { deal: Deal }) => {
