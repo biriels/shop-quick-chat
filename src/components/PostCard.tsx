@@ -34,11 +34,11 @@ export const PostCard = ({ post, business }: PostCardProps) => {
     <article className="group relative">
       {/* Image Container */}
       <Link to={`/post/${post.id}`} className="block">
-        <div className="aspect-square overflow-hidden rounded-xl relative bg-secondary">
+        <div className="aspect-[4/3] overflow-hidden rounded-xl relative bg-secondary">
           <img
             src={post.media_url}
             alt={post.product_name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain bg-secondary group-hover:scale-105 transition-transform duration-300"
           />
           
           {/* Guest Favorite Badge */}
