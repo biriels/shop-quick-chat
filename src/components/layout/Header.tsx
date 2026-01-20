@@ -11,8 +11,19 @@ export const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center">
-          <img src={logo} alt="Marketplace by ravenhive" className="h-10 w-auto" />
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-primary/10 rounded-xl blur-sm group-hover:blur-md transition-all duration-300" />
+            <img 
+              src={logo} 
+              alt="LinkUp Marketplace" 
+              className="relative h-12 w-auto rounded-lg shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-105" 
+            />
+          </div>
+          <div className="hidden sm:flex flex-col">
+            <span className="text-lg font-bold text-foreground tracking-tight">LinkUp</span>
+            <span className="text-[10px] text-muted-foreground -mt-1">Marketplace</span>
+          </div>
         </Link>
 
         {/* Desktop Nav - Center */}
