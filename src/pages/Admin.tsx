@@ -99,17 +99,41 @@ const Admin = () => {
   const handleApproveSubmission = async (submission: BusinessSubmission) => {
     setProcessingSubmission(true);
     try {
-      // Create the business
-      const { error: businessError } = await supabase.from("businesses").insert({
-        name: submission.business_name,
-        whatsapp_number: submission.whatsapp_number,
-        category: submission.category,
-        description: submission.description,
-        verified: true,
-        active: true,
-      });
+      // Create the business and get the new business ID
+      const { data: newBusiness, error: businessError } = await supabase
+        .from("businesses")
+        .insert({
+          name: submission.business_name,
+          whatsapp_number: submission.whatsapp_number,
+          category: submission.category,
+          description: submission.description,
+          verified: true,
+          active: true,
+        })
+        .select("id")
+        .single();
 
       if (businessError) throw businessError;
+
+      // Create posts from product images so they appear in the feed
+      if (submission.product_images && submission.product_images.length > 0) {
+        const postsToCreate = submission.product_images.map((imageUrl, index) => ({
+          business_id: newBusiness.id,
+          media_url: imageUrl,
+          product_name: `${submission.business_name} Product ${index + 1}`,
+          caption: submission.description || `Product from ${submission.business_name}`,
+          price: 0, // Default price, admin can update later
+          active: true,
+        }));
+
+        const { error: postsError } = await supabase.from("posts").insert(postsToCreate);
+        
+        if (postsError) {
+          console.error("Failed to create posts:", postsError);
+          // Don't throw - business was created successfully, posts are optional
+          toast.warning("Business approved but some posts couldn't be created");
+        }
+      }
 
       // Update submission status
       const { error: updateError } = await supabase
@@ -119,7 +143,7 @@ const Admin = () => {
 
       if (updateError) throw updateError;
 
-      toast.success("Business approved and added!");
+      toast.success("Business approved and posts added to feed!");
       setSelectedSubmission(null);
       await fetchSubmissions();
       await refreshData();
