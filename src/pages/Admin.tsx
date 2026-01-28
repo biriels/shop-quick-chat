@@ -15,7 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { categories } from "@/data/mockData";
-import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut, ClipboardList, Check, X, Eye } from "lucide-react";
+import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut, ClipboardList, Check, X, Eye, Globe, Tag } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { SourceManager } from "@/components/admin/SourceManager";
+import { KeywordEngine } from "@/components/admin/KeywordEngine";
 
 interface BusinessSubmission {
   id: string;
@@ -362,7 +364,7 @@ const Admin = () => {
               Admin Panel
             </h1>
             <p className="text-muted-foreground">
-              Manage businesses, posts, and submissions.
+              Manage businesses, posts, submissions, and AI demand scanner.
             </p>
           </div>
           <Button variant="outline" onClick={signOut} className="flex items-center gap-2">
@@ -372,10 +374,10 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full max-w-lg grid-cols-3">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
             <TabsTrigger value="submissions" className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4" />
-              Submissions
+              <span className="hidden sm:inline">Submissions</span>
               {pendingSubmissions.length > 0 && (
                 <span className="ml-1 bg-accent text-accent-foreground text-xs px-1.5 py-0.5 rounded-full">
                   {pendingSubmissions.length}
@@ -384,11 +386,19 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="businesses" className="flex items-center gap-2">
               <Store className="h-4 w-4" />
-              Businesses
+              <span className="hidden sm:inline">Businesses</span>
             </TabsTrigger>
             <TabsTrigger value="posts" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
-              Posts
+              <span className="hidden sm:inline">Posts</span>
+            </TabsTrigger>
+            <TabsTrigger value="sources" className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              <span className="hidden sm:inline">Sources</span>
+            </TabsTrigger>
+            <TabsTrigger value="keywords" className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              <span className="hidden sm:inline">Keywords</span>
             </TabsTrigger>
           </TabsList>
 
@@ -861,6 +871,16 @@ const Admin = () => {
                 })
               )}
             </div>
+          </TabsContent>
+
+          {/* Sources Tab - AI Demand Scanner */}
+          <TabsContent value="sources" className="space-y-6">
+            <SourceManager />
+          </TabsContent>
+
+          {/* Keywords Tab - AI Demand Scanner */}
+          <TabsContent value="keywords" className="space-y-6">
+            <KeywordEngine />
           </TabsContent>
         </Tabs>
       </div>
