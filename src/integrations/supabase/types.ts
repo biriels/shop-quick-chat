@@ -89,6 +89,47 @@ export type Database = {
         }
         Relationships: []
       }
+      fetched_content: {
+        Row: {
+          content_hash: string | null
+          error_message: string | null
+          fetched_at: string
+          id: string
+          raw_text: string | null
+          source_id: string
+          source_url: string
+          status: string
+        }
+        Insert: {
+          content_hash?: string | null
+          error_message?: string | null
+          fetched_at?: string
+          id?: string
+          raw_text?: string | null
+          source_id: string
+          source_url: string
+          status?: string
+        }
+        Update: {
+          content_hash?: string | null
+          error_message?: string | null
+          fetched_at?: string
+          id?: string
+          raw_text?: string | null
+          source_id?: string
+          source_url?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fetched_content_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       keywords: {
         Row: {
           category: Database["public"]["Enums"]["keyword_category"]
