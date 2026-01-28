@@ -89,6 +89,27 @@ export type Database = {
         }
         Relationships: []
       }
+      keywords: {
+        Row: {
+          category: Database["public"]["Enums"]["keyword_category"]
+          created_at: string
+          id: string
+          keyword: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["keyword_category"]
+          created_at?: string
+          id?: string
+          keyword: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["keyword_category"]
+          created_at?: string
+          id?: string
+          keyword?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           active: boolean
@@ -136,6 +157,36 @@ export type Database = {
           },
         ]
       }
+      sources: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          source_type: Database["public"]["Enums"]["source_type"]
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          source_type: Database["public"]["Enums"]["source_type"]
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          source_type?: Database["public"]["Enums"]["source_type"]
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -172,6 +223,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      keyword_category: "product" | "intent" | "location"
+      source_type: "forum" | "listing" | "group" | "website"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -300,6 +353,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      keyword_category: ["product", "intent", "location"],
+      source_type: ["forum", "listing", "group", "website"],
     },
   },
 } as const
