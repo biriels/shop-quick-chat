@@ -15,7 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { categories } from "@/data/mockData";
-import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut, ClipboardList, Check, X, Eye, Globe, Tag } from "lucide-react";
+import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut, ClipboardList, Check, X, Eye, Globe, Tag, FileText } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { SourceManager } from "@/components/admin/SourceManager";
 import { KeywordEngine } from "@/components/admin/KeywordEngine";
+import { FetchedContentViewer } from "@/components/admin/FetchedContentViewer";
 
 interface BusinessSubmission {
   id: string;
@@ -374,7 +375,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-5">
+          <TabsList className="grid w-full max-w-4xl grid-cols-6">
             <TabsTrigger value="submissions" className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4" />
               <span className="hidden sm:inline">Submissions</span>
@@ -399,6 +400,10 @@ const Admin = () => {
             <TabsTrigger value="keywords" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
               <span className="hidden sm:inline">Keywords</span>
+            </TabsTrigger>
+            <TabsTrigger value="content" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Content</span>
             </TabsTrigger>
           </TabsList>
 
@@ -881,6 +886,11 @@ const Admin = () => {
           {/* Keywords Tab - AI Demand Scanner */}
           <TabsContent value="keywords" className="space-y-6">
             <KeywordEngine />
+          </TabsContent>
+
+          {/* Fetched Content Tab - AI Demand Scanner */}
+          <TabsContent value="content" className="space-y-6">
+            <FetchedContentViewer />
           </TabsContent>
         </Tabs>
       </div>
