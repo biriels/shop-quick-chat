@@ -15,7 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { categories } from "@/data/mockData";
-import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut, ClipboardList, Check, X, Eye, Globe, Tag, FileText } from "lucide-react";
+import { Pencil, Trash2, Plus, Store, Package, Loader2, CheckCircle, LogOut, ClipboardList, Check, X, Eye, Globe, Tag, FileText, Search, Settings } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -29,6 +29,9 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { SourceManager } from "@/components/admin/SourceManager";
 import { KeywordEngine } from "@/components/admin/KeywordEngine";
 import { FetchedContentViewer } from "@/components/admin/FetchedContentViewer";
+import { LeadsDashboard } from "@/components/admin/LeadsDashboard";
+import { AlertSettings } from "@/components/admin/AlertSettings";
+import { NotificationBell } from "@/components/admin/NotificationBell";
 
 interface BusinessSubmission {
   id: string;
@@ -368,14 +371,25 @@ const Admin = () => {
               Manage businesses, posts, submissions, and AI demand scanner.
             </p>
           </div>
-          <Button variant="outline" onClick={signOut} className="flex items-center gap-2">
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Button variant="outline" onClick={signOut} className="flex items-center gap-2">
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full max-w-4xl grid-cols-6">
+          <TabsList className="grid w-full max-w-5xl grid-cols-8">
+            <TabsTrigger value="leads" className="flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              <span className="hidden sm:inline">Leads</span>
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Alerts</span>
+            </TabsTrigger>
             <TabsTrigger value="submissions" className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4" />
               <span className="hidden sm:inline">Submissions</span>
@@ -406,6 +420,16 @@ const Admin = () => {
               <span className="hidden sm:inline">Content</span>
             </TabsTrigger>
           </TabsList>
+
+          {/* Leads Tab - AI Demand Scanner */}
+          <TabsContent value="leads" className="space-y-6">
+            <LeadsDashboard />
+          </TabsContent>
+
+          {/* Alerts Tab - AI Demand Scanner */}
+          <TabsContent value="alerts" className="space-y-6">
+            <AlertSettings />
+          </TabsContent>
 
           {/* Submissions Tab */}
           <TabsContent value="submissions" className="space-y-6">

@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_settings: {
+        Row: {
+          created_at: string
+          email_address: string | null
+          email_enabled: boolean
+          id: string
+          in_app_enabled: boolean
+          updated_at: string
+          user_id: string
+          whatsapp_enabled: boolean
+          whatsapp_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          email_address?: string | null
+          email_enabled?: boolean
+          id?: string
+          in_app_enabled?: boolean
+          updated_at?: string
+          user_id: string
+          whatsapp_enabled?: boolean
+          whatsapp_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          email_address?: string | null
+          email_enabled?: boolean
+          id?: string
+          in_app_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+          whatsapp_enabled?: boolean
+          whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
       business_submissions: {
         Row: {
           business_name: string
@@ -150,6 +186,101 @@ export type Database = {
           keyword?: string
         }
         Relationships: []
+      }
+      leads: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          fetched_content_id: string | null
+          id: string
+          matched_keywords: string[]
+          notified: boolean
+          snippet: string
+          source_id: string | null
+          source_url: string
+          status: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          fetched_content_id?: string | null
+          id?: string
+          matched_keywords?: string[]
+          notified?: boolean
+          snippet: string
+          source_id?: string | null
+          source_url: string
+          status?: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          fetched_content_id?: string | null
+          id?: string
+          matched_keywords?: string[]
+          notified?: boolean
+          snippet?: string
+          source_id?: string | null
+          source_url?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_fetched_content_id_fkey"
+            columns: ["fetched_content_id"]
+            isOneToOne: false
+            referencedRelation: "fetched_content"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string | null
+          message: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          message: string
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       posts: {
         Row: {
