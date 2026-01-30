@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.fetch-sources]
 verify_jwt = false
+
+[functions.detect-leads]
+verify_jwt = false
